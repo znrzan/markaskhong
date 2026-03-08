@@ -37,7 +37,7 @@ export default function Home() {
           onClick={handleDownload}
           className="flex items-center gap-2 bg-orange-100 hover:bg-orange-200 text-orange-700 px-4 py-2 rounded-xl font-bold transition-colors w-full justify-center"
         >
-          <Download size={18} /> Simpan QR (Bisa di-print)
+          <Download size={18} /> Simpan QR
         </button>
       </div>
 

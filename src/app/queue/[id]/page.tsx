@@ -7,6 +7,7 @@ import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
 import { AlertCircle, Clock, MapPin, CheckCircle2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import Swal from 'sweetalert2'
 
 export default function QueueStatusPage() {
   const { id } = useParams()
@@ -82,14 +83,51 @@ export default function QueueStatusPage() {
   }, [id])
 
   const handleCancel = async () => {
-    if (!confirm('Yakin batalkan antrian?')) return
+    const result = await Swal.fire({
+      title: 'Batalin ngantri?',
+      text: "Sayang banget lho, seriusan mau batalin antrianmu?",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#F97316',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Iya, Batalin',
+      cancelButtonText: 'Berubah pikiran',
+      reverseButtons: true
+    });
 
-    await supabase
-      .from('queues')
-      .update({ status: 'cancelled' })
-      .eq('id', id)
+    if (!result.isConfirmed) return;
 
-    router.push('/')
+    setLoading(true);
+
+    try {
+      await supabase
+        .from('queues')
+        .update({ status: 'cancelled' })
+        .eq('id', id);
+
+      // Kirim Notifikasi WA Batal (Background task)
+      if (queueData?.phone && queueData.phone !== '-') {
+        const waMessage = `Yah, sayang banget ${queueData.customer_name}, antrianmu di Markas Khong barusan dibatalin 😔.\n\nKapan-kapan mampir lagi ya kalau udah senggang! ✂️🛵`;
+        fetch('/api/whatsapp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone: queueData.phone, message: waMessage })
+        }).catch(err => console.error("Gagal trigger WA Cancel:", err));
+      }
+
+      await Swal.fire({
+        title: 'Dibatalkan!',
+        text: 'Antrian lu udah berhasil dibatalin.',
+        icon: 'success',
+        confirmButtonColor: '#F97316'
+      });
+
+      router.push('/');
+    } catch (err) {
+      console.error(err);
+      Swal.fire('Oops!', 'Gagal membatalkan antrian.', 'error');
+      setLoading(false);
+    }
   }
 
   if (loading) {

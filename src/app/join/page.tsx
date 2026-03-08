@@ -166,7 +166,10 @@ export default function JoinPage() {
     } else if (data?.id) {
       // Kirim Notifikasi WA (Background task)
       if (phone.trim()) {
-        const waMessage = `✨ Wuih, mantap ${name.trim()}!\n\nKursimu di Markas Khong udah diamankan nih. Antrianmu nomor:\n*#${finalPosition}*\n\nLayanan: *${serviceType}*\nModel: *${haircutModel || 'Sesuai Arahan'}*\n\nBiar nggak bosan nunggu di tempat, pantau sisa antrianmu live dari HP di sini ya:\nhttps://markaskhong.com/queue/${data.id}\n\nSiap-siap meluncur kalau giliranmu udah dekat! 🛵💨`;
+        const formattedDate = bookingDate ? new Date(bookingDate).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : '';
+        const waMessage = serviceType === 'Booking'
+          ? `✨ Wuih, mantap ${name.trim()}!\n\nTiket booking cukurmu di Markas Khong udah aman nih.\n\nKode Booking: *#${finalPosition}*\nJadwal: *${formattedDate}*\nSesi: *${bookingTime}*\nLayanan: *${serviceType}*\nModel: *${haircutModel || 'Sesuai Arahan'}*\n\nSimpan link ini buat pantau tiketmu ya:\nhttps://markaskhong.com/queue/${data.id}\n\nDateng tepat waktu ya bosku pas harinya! 🛵💨`
+          : `✨ Wuih, mantap ${name.trim()}!\n\nKursimu di Markas Khong udah diamankan nih. Antrianmu nomor:\n*#${finalPosition}*\n\nLayanan: *${serviceType}*\nModel: *${haircutModel || 'Sesuai Arahan'}*\n\nBiar nggak bosan nunggu di tempat, pantau sisa antrianmu live dari HP di sini ya:\nhttps://markaskhong.com/queue/${data.id}\n\nSiap-siap meluncur kalau giliranmu udah dekat! 🛵💨`;
 
         // Sengaja tidak di-await agar tidak slowing down UI redirect
         fetch('/api/whatsapp', {

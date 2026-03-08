@@ -67,7 +67,7 @@ export default function FullAntreanPage() {
     // Kirim WA Terima Kasih
     const customer = queues.find(q => q.id === id)
     if (customer && customer.phone && customer.phone !== '-') {
-      const waMessage = `Yeay, Beres Bosku! 🎉\n\nRambut ${customer.customer_name} udah rapi maksimal nih. Semoga suka sama hasil potongannya ya! 😎✂️\n\nDitunggu kedatangannya lagi di Markas Khong!\n\nKasih tau temen-temen tongkrongan buat potong di mari ya 🤙`;
+      const waMessage = `Yeay, Beres Bosku! 🎉\n\nRambut ${customer.customer_name} udah rapi maksimal nih. Semoga suka sama hasil potongannya ya! 😎✂️\n\nDitunggu kedatangannya lagi di Markas Khong!\n\nKasih tau temen-temen tongkrongan buat potong di mari ya`;
       fetch('/api/whatsapp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
