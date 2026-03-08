@@ -77,7 +77,7 @@ export default function FullAntreanPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col overflow-x-hidden pb-24">
+    <div className="flex-1 bg-white flex flex-col overflow-x-hidden pb-24">
       {/* Header Mirip App */}
       <div className="pt-6 px-6 pb-4 flex justify-between items-center bg-white sticky top-0 z-30 shadow-sm border-b border-gray-100">
         <div className="flex items-center gap-2">

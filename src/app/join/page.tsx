@@ -186,7 +186,7 @@ export default function JoinPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col overflow-x-hidden">
+    <div className="flex-1 bg-white flex flex-col overflow-x-hidden">
       <div className="flex-1 max-w-md mx-auto w-full px-4 sm:px-6 py-8 sm:py-12">
         <h1 className="text-3xl sm:text-4xl font-extrabold text-orange-600 mb-3 text-center tracking-tight">
           Daftar Antrian Yuk!
@@ -287,12 +287,13 @@ export default function JoinPage() {
 
           {/* WhatsApp Input */}
           <div className="flex flex-col gap-2 mb-5">
-            <Label className="text-gray-700 font-bold text-base">Nomor WhatsApp (Opsional)</Label>
+            <Label className="text-gray-700 font-bold text-base">Nomor WhatsApp *</Label>
             <Input
               type="tel"
-              placeholder="Masukin WA biar dapat notif pas giliranmu dekat!"
+              placeholder="Wajib diisi biar dapat notif pas giliranmu dekat!"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
+              required
               className="h-14 border-2 border-orange-200 focus:border-orange-500 focus:ring-orange-500 rounded-xl bg-orange-50/30 text-base shadow-sm w-full placeholder:text-gray-400"
             />
           </div>

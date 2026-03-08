@@ -168,12 +168,13 @@ export default function AddQueueModal({ isOpen, onClose, onSuccess }: AddQueueMo
                         </div>
 
                         <div>
-                            <Label className="text-gray-700 font-medium">Nomor WhatsApp (Opsional)</Label>
+                            <Label className="text-gray-700 font-medium">Nomor WhatsApp *</Label>
                             <Input
                                 type="tel"
-                                placeholder="Disarankan jika ingin notif WA"
+                                placeholder="Wajib diisi untuk notif WA"
                                 value={phone}
                                 onChange={(e) => setPhone(e.target.value)}
+                                required
                                 className="mt-1"
                             />
                         </div>

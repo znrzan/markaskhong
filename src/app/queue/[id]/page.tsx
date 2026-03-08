@@ -131,12 +131,12 @@ export default function QueueStatusPage() {
   }
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center text-gray-500">Memuat...</div>
+    return <div className="flex-1 flex items-center justify-center text-gray-500">Memuat...</div>
   }
 
   if (error || !queueData) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6">
+      <div className="flex-1 flex flex-col items-center justify-center p-6">
         <AlertCircle size={64} className="text-red-500 mb-4" />
         <h1 className="text-2xl font-bold mb-2">Oops!</h1>
         <p className="text-gray-600 text-center">{error || 'Antrian tidak ditemukan'}</p>
@@ -150,7 +150,7 @@ export default function QueueStatusPage() {
   // Kondisi utama: kalau sudah selesai, tampilkan pesan terima kasih
   if (queueData.status === 'done') {
     return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6 overflow-x-hidden">
+      <div className="flex-1 bg-white flex flex-col items-center justify-center p-6 overflow-x-hidden">
         <CheckCircle2 size={80} className="text-green-500 mb-6" />
         <h1 className="text-3xl sm:text-4xl font-bold text-green-600 mb-4 text-center tracking-tight">
           Yeay, Beres Bosku!
@@ -188,7 +188,7 @@ export default function QueueStatusPage() {
     : ''
 
   return (
-    <div className="min-h-screen bg-white flex flex-col overflow-x-hidden">
+    <div className="flex-1 bg-white flex flex-col overflow-x-hidden">
       <div className="flex-1 max-w-md mx-auto w-full px-4 sm:px-6 py-8 sm:py-12">
         <h1 className="text-2xl font-extrabold text-gray-800 mb-2 text-center tracking-tight">Posisimu Sekarang</h1>
 
