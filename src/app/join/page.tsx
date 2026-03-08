@@ -29,11 +29,8 @@ export default function JoinPage() {
         .select('*')
         .order('name')
 
-      if (error) {
-        setError('Gagal memuat model rambut')
-      } else {
-        setServices(data || [])
-      }
+      if (error) setError('Gagal memuat model rambut')
+      else setServices(data || [])
       setLoading(false)
     }
     fetchServices()
@@ -41,10 +38,6 @@ export default function JoinPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!name.trim() || !phone.trim()) {
-      setError('Nama dan Nomor HP wajib diisi')
-      return
-    }
     if (!agreeTerms) {
       setError('Setujui syarat terlebih dahulu')
       return
@@ -90,10 +83,8 @@ export default function JoinPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white overflow-x-hidden">
-      {/* Konten utama dibatasi lebar max-w-md di tengah */}
-      <div className="max-w-md mx-auto w-full px-4 sm:px-6 py-8 sm:py-12">
-        {/* Header */}
+    <div className="min-h-screen bg-white overflow-hidden">
+      <div className="max-w-md mx-auto w-full px-4 sm:px-6 py-8 sm:py-12 flex flex-col min-h-screen">
         <h1 className="text-3xl sm:text-4xl font-bold text-orange-600 mb-3 text-center">
           Join Antrian Sekarang
         </h1>
@@ -101,7 +92,6 @@ export default function JoinPage() {
           Masukkan data Anda untuk mendapatkan nomor antrian
         </p>
 
-        {/* Error */}
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl mb-8 flex items-center gap-3">
             <AlertCircle size={20} />
@@ -110,52 +100,28 @@ export default function JoinPage() {
         )}
 
         {loading && services.length === 0 ? (
-          <div className="text-center text-gray-500 py-20">Memuat daftar model rambut...</div>
+          <div className="flex-1 flex items-center justify-center text-gray-500">Memuat...</div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
-            {/* Nama */}
+          <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8 flex-1">
             <div>
-              <Label htmlFor="name" className="text-gray-700 font-medium mb-2 block text-base">
-                Nama Lengkap
-              </Label>
-              <Input
-                id="name"
-                placeholder="Contoh: Budi Santos"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                className="h-12 sm:h-14 text-base rounded-xl border-gray-300 focus:border-orange-500 focus:ring-orange-500"
-              />
+              <Label className="text-gray-700 font-medium mb-2 block text-base">Nama Lengkap</Label>
+              <Input placeholder="Contoh: Budi Santos" value={name} onChange={(e) => setName(e.target.value)} required className="h-12 sm:h-14 text-base rounded-xl" />
             </div>
 
-            {/* HP */}
             <div>
-              <Label htmlFor="phone" className="text-gray-700 font-medium mb-2 block text-base">
-                Nomor HP / WhatsApp
-              </Label>
-              <Input
-                id="phone"
-                type="tel"
-                placeholder="0812xxxxxxx"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                required
-                className="h-12 sm:h-14 text-base rounded-xl border-gray-300 focus:border-orange-500 focus:ring-orange-500"
-              />
+              <Label className="text-gray-700 font-medium mb-2 block text-base">Nomor HP / WhatsApp</Label>
+              <Input type="tel" placeholder="0812xxxxxxx" value={phone} onChange={(e) => setPhone(e.target.value)} required className="h-12 sm:h-14 text-base rounded-xl" />
             </div>
 
-            {/* Potongan */}
             <div>
-              <Label htmlFor="service" className="text-gray-700 font-medium mb-2 block text-base">
-                Jenis Potongan Rambut
-              </Label>
+              <Label className="text-gray-700 font-medium mb-2 block text-base">Jenis Potongan Rambut</Label>
               <Select value={serviceId} onValueChange={setServiceId} required>
-                <SelectTrigger className="h-12 sm:h-14 text-base rounded-xl border-gray-300 focus:border-orange-500 focus:ring-orange-500">
+                <SelectTrigger className="h-12 sm:h-14 text-base rounded-xl">
                   <SelectValue placeholder="Pilih model rambut" />
                 </SelectTrigger>
                 <SelectContent>
                   {services.map((s) => (
-                    <SelectItem key={s.id} value={s.id} className="text-base">
+                    <SelectItem key={s.id} value={s.id}>
                       {s.name} {s.is_trending && <span className="text-yellow-600 font-medium ml-1">(Trend)</span>}
                     </SelectItem>
                   ))}
@@ -163,35 +129,21 @@ export default function JoinPage() {
               </Select>
             </div>
 
-            {/* Info Estimasi */}
             <div className="bg-gray-50 border border-gray-200 p-5 rounded-xl text-sm text-gray-600">
               <p className="font-medium mb-2">Estimasi waktu tunggu saat ini sekitar 25 menit.</p>
               <p>Anda akan menerima notifikasi WhatsApp saat giliran Anda mendekat.</p>
             </div>
 
-            {/* Syarat */}
             <div className="flex items-start gap-3">
-              <Checkbox
-                id="terms"
-                checked={agreeTerms}
-                onCheckedChange={(checked) => setAgreeTerms(!!checked)}
-                className="mt-1 h-5 w-5 border-orange-500 data-[state=checked]:bg-orange-500 data-[state=checked]:border-orange-500"
-              />
+              <Checkbox id="terms" checked={agreeTerms} onCheckedChange={(checked) => setAgreeTerms(!!checked)} className="mt-1 h-5 w-5 border-orange-500 data-[state=checked]:bg-orange-500" />
               <Label htmlFor="terms" className="text-sm text-gray-600 leading-relaxed cursor-pointer">
                 Dengan bergabung, Anda menyetujui syarat & ketentuan kami. Kami akan mengirimkan notifikasi WhatsApp saat giliran Anda.
               </Label>
             </div>
 
-            {/* Button */}
-            <div className="pt-6">
-              <Button
-                type="submit"
-                className="w-full bg-orange-600 hover:bg-orange-700 text-white h-14 sm:h-16 text-lg sm:text-xl font-bold rounded-xl shadow-lg"
-                disabled={loading || !agreeTerms}
-              >
-                {loading ? 'Memproses...' : 'Masuk Antrian'}
-              </Button>
-            </div>
+            <Button type="submit" className="w-full bg-orange-600 hover:bg-orange-700 text-white h-14 sm:h-16 text-lg sm:text-xl font-bold rounded-xl shadow-lg mt-6 sm:mt-10" disabled={loading || !agreeTerms}>
+              {loading ? 'Memproses...' : 'Masuk Antrian'}
+            </Button>
           </form>
         )}
       </div>
