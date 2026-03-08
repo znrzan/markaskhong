@@ -9,7 +9,7 @@ export default function BottomNav() {
   const pathname = usePathname()
 
   return (
-    <nav className="fixed-bottom-nav">
+    <nav className="fixed bottom-0 w-full z-50 bg-white border-t border-gray-200">
       <div className="flex justify-around items-center h-16 px-4">
         <Link href="/" className={cn(
           "flex flex-col items-center",
@@ -27,12 +27,12 @@ export default function BottomNav() {
           <span className="text-xs mt-1">Antrian</span>
         </Link>
 
-        <Link href="/profil" className={cn(
+        <Link href="/dashboard" className={cn(
           "flex flex-col items-center",
-          pathname === '/profil' ? "text-orange-600" : "text-gray-600"
+          pathname === '/dashboard' ? "text-orange-600" : "text-gray-600"
         )}>
           <User size={24} />
-          <span className="text-xs mt-1">Profil</span>
+          <span className="text-xs mt-1">Dashboard</span>
         </Link>
       </div>
     </nav>

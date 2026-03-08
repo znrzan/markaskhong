@@ -4,7 +4,7 @@ export default function Home() {
   const joinUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/join`
 
   return (
-    <div className="min-h-screen bg-white flex flex-col items-center justify-center px-6 py-12 overflow-x-hidden">
+    <div className="flex-1 bg-white flex flex-col items-center justify-center px-6 py-12 overflow-x-hidden">
       <h1 className="text-4xl sm:text-5xl font-bold text-orange-600 mb-10 text-center">
         Scan untuk Join Antrian
       </h1>

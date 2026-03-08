@@ -18,7 +18,7 @@ export default function RootLayout({
   return (
     <html lang="id">
       <body className={inter.className}>
-        <main className="min-h-screen bg-white pb-20">
+        <main className="min-h-[100dvh] bg-white pb-16 flex flex-col">
           {children}
         </main>
         <BottomNav />

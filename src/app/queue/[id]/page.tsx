@@ -37,16 +37,31 @@ export default function QueueStatusPage() {
 
       setQueueData(userQueue)
 
-      // Fetch semua antrian aktif hari ini untuk hitung posisi real
-      const today = new Date().toISOString().split('T')[0]
-      const { data: allActive } = await supabase
-        .from('queues')
-        .select('id, position, status')
-        .gte('created_at', today)
-        .neq('status', 'done') // hanya yang belum selesai
-        .order('position', { ascending: true })
+      // Fetch semua antrian aktif hari ini untuk hitung posisi real (Hanya untuk tipe non-booking)
+      if (userQueue.service_type !== 'Booking') {
+        const today = new Date().toISOString().split('T')[0]
+        const { data: allActive } = await supabase
+          .from('queues')
+          .select('id, position, status')
+          .gte('created_at', today)
+          .neq('service_type', 'Booking')
+          .neq('status', 'done') // hanya yang belum selesai
+          .order('position', { ascending: true })
 
-      setAllQueues(allActive || [])
+        setAllQueues(allActive || [])
+      } else {
+        // Untuk Booking, kita bisa ambil semua antrian booking di slot waktu yang sama yang belum selesai
+        const { data: allActiveBooking } = await supabase
+          .from('queues')
+          .select('id, position, status')
+          .eq('service_type', 'Booking')
+          .eq('booking_date', userQueue.booking_date)
+          .eq('booking_time', userQueue.booking_time)
+          .neq('status', 'done')
+          .order('position', { ascending: true })
+
+        setAllQueues(allActiveBooking || [])
+      }
 
       setLoading(false)
     }
@@ -117,12 +132,22 @@ export default function QueueStatusPage() {
   }
 
   // Kalau belum selesai, tampilkan status normal
-  // Hitung posisi real dari semua antrian aktif
+  // Hitung posisi real dari semua antrian aktif (yang tipe-nya sesuai/sejenis)
   const activeQueues = allQueues.filter(q => q.status !== 'done')
   const currentPosition = activeQueues.findIndex(q => q.id === id) + 1
-  const estimated = currentPosition * 30 // rata-rata 30 menit per orang
 
-  const progress = Math.min(100, 100 - ((currentPosition - 1) * 10)) // contoh
+  // Jika karena suatu alasan findIndex -1, fallback ke position asli
+  const displayPosition = currentPosition > 0 ? currentPosition : queueData.position
+
+  const estimated = displayPosition * 30 // rata-rata 30 menit per orang
+
+  const progress = Math.min(100, 100 - ((displayPosition - 1) * 10)) // contoh
+
+  // Info tambahan untuk booking
+  const isBooking = queueData.service_type === 'Booking'
+  const bookingDateFormatted = isBooking && queueData.booking_date
+    ? new Date(queueData.booking_date).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+    : ''
 
   return (
     <div className="min-h-screen bg-white flex flex-col overflow-x-hidden">
@@ -135,10 +160,18 @@ export default function QueueStatusPage() {
           </Badge>
         </div>
 
+        {isBooking && (
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6 text-center">
+            <p className="text-sm text-blue-800 font-semibold mb-1">Jadwal Booking Anda:</p>
+            <p className="text-blue-900 font-bold">{bookingDateFormatted}</p>
+            <p className="text-blue-700">Sesi: {queueData.booking_time}</p>
+          </div>
+        )}
+
         <div className="text-center mb-10">
           <p className="text-lg text-gray-600 mb-1">NOMOR ANTRIAN ANDA</p>
           <h2 className="text-6xl sm:text-7xl font-extrabold text-orange-600">
-            ke-{currentPosition}
+            ke-{queueData.position}
           </h2>
           <p className="text-sm text-gray-500 mt-2">
             Nama: {queueData.customer_name}
@@ -149,7 +182,7 @@ export default function QueueStatusPage() {
           <div className="flex items-center justify-center gap-3 mb-4">
             <Clock size={32} className="text-orange-600" />
             <p className="text-2xl font-bold text-orange-600">
-              Estimasi {estimated} menit
+              Estimasi {isBooking ? 'Sesuai Sesi' : `${estimated} menit`}
             </p>
           </div>
           <p className="text-gray-700">Menunggu Giliran Anda</p>
@@ -157,11 +190,11 @@ export default function QueueStatusPage() {
 
         <div className="mb-10">
           <p className="text-gray-600 mb-2 text-center">
-            Sisa {currentPosition - 1} orang lagi sebelum Anda
+            Sisa {displayPosition - 1} orang lagi sebelum Anda
           </p>
           <div className="h-4 bg-gray-200 rounded-full overflow-hidden">
-            <Progress 
-              value={progress} 
+            <Progress
+              value={progress}
               className="h-4 bg-gradient-to-r from-orange-400 to-yellow-400"
             />
           </div>
@@ -173,10 +206,10 @@ export default function QueueStatusPage() {
         <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 mb-10">
           <div className="flex items-center gap-3 mb-3">
             <MapPin size={24} className="text-orange-600" />
-            <h3 className="font-semibold text-gray-800">The Gentlemens Club</h3>
+            <h3 className="font-semibold text-gray-800">Markas Khong</h3>
           </div>
           <p className="text-gray-600 text-sm">
-            Jalan Sudirman No. 42, Surabaya
+            Jl. Desa Penatarsewu, Penatarasewu, Penatarsewu, Kec. Tanggulangin, Kabupaten Sidoarjo, Jawa Timur 61272
           </p>
         </div>
 
