@@ -7,7 +7,6 @@ import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
 import { AlertCircle, Clock, MapPin, CheckCircle2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
-import Swal from 'sweetalert2'
 
 export default function QueueStatusPage() {
   const { id } = useParams()
@@ -16,6 +15,10 @@ export default function QueueStatusPage() {
   const [allQueues, setAllQueues] = useState<any[]>([]) // untuk hitung posisi real
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  // Custom Modal State
+  const [showCancelModal, setShowCancelModal] = useState(false)
+  const [cancelSuccess, setCancelSuccess] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -82,22 +85,13 @@ export default function QueueStatusPage() {
     }
   }, [id])
 
-  const handleCancel = async () => {
-    const result = await Swal.fire({
-      title: 'Batalin ngantri?',
-      text: "Sayang banget lho, seriusan mau batalin antrianmu?",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#F97316',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Iya, Batalin',
-      cancelButtonText: 'Berubah pikiran',
-      reverseButtons: true
-    });
+  const handleCancel = () => {
+    setShowCancelModal(true);
+  }
 
-    if (!result.isConfirmed) return;
-
+  const confirmCancel = async () => {
     setLoading(true);
+    setShowCancelModal(false);
 
     try {
       await supabase
@@ -115,17 +109,14 @@ export default function QueueStatusPage() {
         }).catch(err => console.error("Gagal trigger WA Cancel:", err));
       }
 
-      await Swal.fire({
-        title: 'Dibatalkan!',
-        text: 'Antrian lu udah berhasil dibatalin.',
-        icon: 'success',
-        confirmButtonColor: '#F97316'
-      });
+      setCancelSuccess(true);
+      setTimeout(() => {
+        router.push('/');
+      }, 2000);
 
-      router.push('/');
     } catch (err) {
       console.error(err);
-      Swal.fire('Oops!', 'Gagal membatalkan antrian.', 'error');
+      alert('Gagal membatalkan antrian. Silakan coba lagi.');
       setLoading(false);
     }
   }
@@ -256,11 +247,44 @@ export default function QueueStatusPage() {
           variant="outline"
           className="w-full border-red-500 text-red-600 hover:bg-red-50 h-14 text-lg font-bold rounded-xl"
           onClick={handleCancel}
-          disabled={loading}
+          disabled={loading || cancelSuccess}
         >
-          Batalin Antrian Dong
+          {cancelSuccess ? 'Berhasil Dibatalkan...' : 'Batalin Antrian Dong'}
         </Button>
       </div>
+
+      {/* Tailwind Overlay Modal for Cancellation */}
+      {showCancelModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden flex flex-col items-center p-6 text-center animate-in zoom-in-95 duration-200">
+            <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-4">
+              <AlertCircle size={32} />
+            </div>
+            <h3 className="text-xl font-extrabold text-gray-900 mb-2">Batalin Ngantri?</h3>
+            <p className="text-gray-500 mb-6 font-medium">Sayang banget loh, seriusan mau batalin antrianmu sekarang?</p>
+
+            <div className="flex flex-col w-full gap-3">
+              <Button onClick={confirmCancel} className="w-full bg-red-500 hover:bg-red-600 h-12 text-base font-bold rounded-xl">
+                Iya, Batalin Aja
+              </Button>
+              <Button onClick={() => setShowCancelModal(false)} variant="outline" className="w-full border-gray-200 hover:bg-gray-50 text-gray-700 h-12 text-base font-bold rounded-xl">
+                Balik Ngantri (Gak Jadi)
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Success Overlay */}
+      {cancelSuccess && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-white/90 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="flex flex-col items-center animate-in zoom-in duration-300">
+            <CheckCircle2 size={80} className="text-orange-500 mb-4" />
+            <h2 className="text-2xl font-black text-gray-900 mb-1">Dibatalkan!</h2>
+            <p className="text-gray-600 font-medium">Balik ke halaman utama...</p>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
