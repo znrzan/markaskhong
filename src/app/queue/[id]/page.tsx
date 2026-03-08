@@ -114,18 +114,18 @@ export default function QueueStatusPage() {
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6 overflow-x-hidden">
         <CheckCircle2 size={80} className="text-green-500 mb-6" />
-        <h1 className="text-3xl sm:text-4xl font-bold text-green-600 mb-4 text-center">
-          Terima Kasih!
+        <h1 className="text-3xl sm:text-4xl font-bold text-green-600 mb-4 text-center tracking-tight">
+          Yeay, Beres Bosku!
         </h1>
-        <p className="text-lg text-gray-700 text-center mb-8 max-w-md">
-          Sudah selesai cukur rambut hari ini. Semoga puas dengan hasilnya! 😊
+        <p className="text-lg text-gray-700 text-center mb-8 max-w-md font-medium">
+          Rambut udah rapi maksimal nih. Semoga suka sama hasil potongannya ya! 😎✂️
         </p>
         <p className="text-gray-500 text-center mb-10">
-          Sampai jumpa lagi di lain waktu.
+          Ditunggu kedatangannya lagi di Markas Khong.
         </p>
 
-        <Button onClick={() => router.push('/')} className="bg-orange-600 hover:bg-orange-700">
-          Kembali ke Beranda
+        <Button onClick={() => router.push('/')} className="bg-orange-600 hover:bg-orange-700 h-12 w-full max-w-xs font-bold text-lg rounded-xl">
+          Balik ke Detail Home
         </Button>
       </div>
     )
@@ -152,11 +152,11 @@ export default function QueueStatusPage() {
   return (
     <div className="min-h-screen bg-white flex flex-col overflow-x-hidden">
       <div className="flex-1 max-w-md mx-auto w-full px-4 sm:px-6 py-8 sm:py-12">
-        <h1 className="text-2xl font-bold text-gray-800 mb-2 text-center">Status Antrian</h1>
+        <h1 className="text-2xl font-extrabold text-gray-800 mb-2 text-center tracking-tight">Posisimu Sekarang</h1>
 
         <div className="flex justify-center mb-8">
-          <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-300 px-4 py-1 text-lg">
-            Sedang Menunggu
+          <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-300 px-4 py-1 text-lg font-bold">
+            Lagi Nunggu Giliran ⏳
           </Badge>
         </div>
 
@@ -169,37 +169,38 @@ export default function QueueStatusPage() {
         )}
 
         <div className="text-center mb-10">
-          <p className="text-lg text-gray-600 mb-1">NOMOR ANTRIAN ANDA</p>
-          <h2 className="text-6xl sm:text-7xl font-extrabold text-orange-600">
-            ke-{queueData.position}
+          <p className="text-lg text-gray-500 mb-1 font-bold tracking-widest text-[11px] uppercase">NOMOR PANGGILANMU</p>
+          <h2 className="text-6xl sm:text-7xl font-extrabold text-orange-600 tracking-tighter">
+            #{queueData.position}
           </h2>
-          <p className="text-sm text-gray-500 mt-2">
-            Nama: {queueData.customer_name}
+          <p className="text-sm font-medium text-gray-500 mt-2">
+            Atas nama: <span className="text-gray-800 font-bold">{queueData.customer_name}</span>
           </p>
         </div>
 
-        <div className="bg-orange-50 border border-orange-200 rounded-xl p-6 mb-8 text-center">
-          <div className="flex items-center justify-center gap-3 mb-4">
+        <div className="bg-orange-50 border border-orange-200 rounded-2xl p-6 mb-8 text-center shadow-inner">
+          <div className="flex items-center justify-center gap-3 mb-3">
             <Clock size={32} className="text-orange-600" />
-            <p className="text-2xl font-bold text-orange-600">
-              Estimasi {isBooking ? 'Sesuai Sesi' : `${estimated} menit`}
+            <p className="text-2xl font-extrabold text-orange-600 tracking-tight">
+              Kira-kira {isBooking ? 'Sesuai Sesi' : `${estimated} menit`} lagi
             </p>
           </div>
-          <p className="text-gray-700">Menunggu Giliran Anda</p>
+          <p className="text-gray-600 font-medium">Santai, bentar lagi giliranmu dicukur kok ☕</p>
         </div>
 
         <div className="mb-10">
-          <p className="text-gray-600 mb-2 text-center">
-            Sisa {displayPosition - 1} orang lagi sebelum Anda
+          <p className="text-gray-600 mb-3 text-center font-bold">
+            Sabar ya, tinggal <span className="text-orange-600">{displayPosition - 1} orang</span> lagi di depanmu!
           </p>
           <div className="h-4 bg-gray-200 rounded-full overflow-hidden">
             <Progress
               value={progress}
-              className="h-4 bg-gradient-to-r from-orange-400 to-yellow-400"
+              className="h-4"
+              indicatorClassName="bg-gradient-to-r from-orange-400 to-yellow-400"
             />
           </div>
-          <p className="text-sm text-gray-500 text-center mt-2">
-            {progress}% menuju giliran • Update otomatis
+          <p className="text-sm font-bold text-gray-500 text-center mt-3">
+            {progress}% lagi menuju giliranmu • Live Update ⚡
           </p>
         </div>
 
@@ -215,11 +216,11 @@ export default function QueueStatusPage() {
 
         <Button
           variant="outline"
-          className="w-full border-orange-600 text-orange-600 hover:bg-orange-50 h-14 text-lg font-bold rounded-xl"
+          className="w-full border-red-500 text-red-600 hover:bg-red-50 h-14 text-lg font-bold rounded-xl"
           onClick={handleCancel}
           disabled={loading}
         >
-          Batalkan Antrian
+          Batalin Antrian Dong
         </Button>
       </div>
     </div>

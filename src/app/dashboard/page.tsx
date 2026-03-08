@@ -5,13 +5,15 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Clock, Users, CheckCircle, AlertCircle } from 'lucide-react'
+import { Clock, Users, CheckCircle, AlertCircle, Plus } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import AddQueueModal from '@/components/AddQueueModal'
 
 export default function DashboardOverview() {
   const [stats, setStats] = useState({ total: 0, waiting: 0, serving: 0, done: 0 })
   const [activeQueues, setActiveQueues] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
 
   useEffect(() => {
     async function fetchData() {
@@ -43,7 +45,7 @@ export default function DashboardOverview() {
 
     const channel = supabase
       .channel('dashboard-overview')
-      .on('postgres_changes', 
+      .on('postgres_changes',
         { event: '*', schema: 'public', table: 'queues' },
         () => {
           fetchData()
@@ -97,8 +99,17 @@ export default function DashboardOverview() {
           </Card>
         </div>
 
-        {/* Antrian Aktif Teratas */}
-        <h2 className="text-xl font-semibold mb-4">Antrian Aktif Saat Ini</h2>
+        {/* Antrian Aktif Teratas & Tombol Tambah Manual */}
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold">Antrian Aktif Saat Ini</h2>
+          <Button
+            onClick={() => setIsAddModalOpen(true)}
+            className="bg-orange-600 hover:bg-orange-700 h-9 px-3 text-sm flex gap-2"
+          >
+            <Plus size={16} />
+            <span className="hidden sm:inline">Tambah Manual</span>
+          </Button>
+        </div>
         {activeQueues.length === 0 ? (
           <p className="text-center text-gray-500 py-8">Tidak ada antrian aktif</p>
         ) : (
@@ -109,9 +120,10 @@ export default function DashboardOverview() {
                   <div className="flex justify-between">
                     <div>
                       <p className="font-bold text-lg">#{q.position} - {q.customer_name}</p>
-                      <p className="text-sm text-gray-600">
-                        {q.services?.name || 'Tidak dipilih'}
-                      </p>
+                      <div className="text-sm text-gray-600 mt-1">
+                        <p><span className="font-medium text-gray-800">Layanan:</span> {q.service_type || 'Standar'}</p>
+                        <p><span className="font-medium text-gray-800">Model:</span> {q.haircut_model || 'Bebas / Sesuai Arahan'}</p>
+                      </div>
                     </div>
                     <Badge variant="outline" className="bg-orange-100 text-orange-800">
                       {q.status === 'serving' ? 'Sedang Dilayani' : 'Menunggu'}
@@ -124,13 +136,24 @@ export default function DashboardOverview() {
         )}
 
         {/* Link ke halaman antrian lengkap */}
-        <div className="mt-8 text-center">
-          <Button asChild className="bg-orange-600 hover:bg-orange-700">
+        <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+          <Button asChild className="bg-orange-600 hover:bg-orange-700 w-full sm:w-auto">
             <Link href="/dashboard/antrean">
               Lihat Semua Antrian →
             </Link>
           </Button>
+          <Button asChild variant="outline" className="w-full sm:w-auto border-orange-600 text-orange-600 hover:bg-orange-50">
+            <Link href="/dashboard/riwayat">
+              Riwayat & Laporan 📊
+            </Link>
+          </Button>
         </div>
+
+        <AddQueueModal
+          isOpen={isAddModalOpen}
+          onClose={() => setIsAddModalOpen(false)}
+          onSuccess={() => { }} // Supabase realtime otomatis refresh data
+        />
       </div>
     </div>
   )

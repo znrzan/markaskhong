@@ -164,6 +164,18 @@ export default function JoinPage() {
       setError('Gagal masuk antrian: ' + insertError.message)
       console.error(insertError)
     } else if (data?.id) {
+      // Kirim Notifikasi WA (Background task)
+      if (phone.trim()) {
+        const waMessage = `✨ Wuih, mantap ${name.trim()}!\n\nKursimu di Markas Khong udah diamankan nih. Antrianmu nomor:\n*#${finalPosition}*\n\nLayanan: *${serviceType}*\nModel: *${haircutModel || 'Sesuai Arahan'}*\n\nBiar nggak bosan nunggu di tempat, pantau sisa antrianmu live dari HP di sini ya:\nhttps://markaskhong.com/queue/${data.id}\n\nSiap-siap meluncur kalau giliranmu udah dekat! 🛵💨`;
+
+        // Sengaja tidak di-await agar tidak slowing down UI redirect
+        fetch('/api/whatsapp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone: phone.trim(), message: waMessage })
+        }).catch(err => console.error("Gagal trigger WA:", err));
+      }
+
       router.push(`/queue/${data.id}`)
     }
 
@@ -173,16 +185,16 @@ export default function JoinPage() {
   return (
     <div className="min-h-screen bg-white flex flex-col overflow-x-hidden">
       <div className="flex-1 max-w-md mx-auto w-full px-4 sm:px-6 py-8 sm:py-12">
-        <h1 className="text-3xl sm:text-4xl font-bold text-orange-600 mb-3 text-center">
-          Join Antrian Sekarang
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-orange-600 mb-3 text-center tracking-tight">
+          Daftar Antrian Yuk!
         </h1>
-        <p className="text-gray-600 text-center mb-6 text-base">
-          Pilih layanan dan isi data Anda untuk memotong antrian
+        <p className="text-gray-600 text-center mb-6 text-base font-medium">
+          Pilih layanan & isi data kamu buat amankan kursi potongnya ✂️
         </p>
 
         {/* Pilihan Layanan */}
         <div className="mb-10">
-          <Label className="text-gray-700 font-medium mb-3 block text-base">Pilih Layanan</Label>
+          <Label className="text-gray-700 font-bold mb-3 block text-base">Pilih Layanan Dulu Nih</Label>
           <div className="space-y-3">
             <button
               type="button"
@@ -247,57 +259,51 @@ export default function JoinPage() {
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl mb-6 flex items-start gap-3">
-            <AlertCircle size={20} className="mt-0.5 shrink-0" />
-            <span>{error}</span>
+          <div className="mb-6 p-4 bg-red-50 text-red-700 text-sm rounded-xl border border-red-200 font-medium">
+            Yah, gagal masuk antrian: {error}
           </div>
         )}
 
         {infoMessage && (
-          <div className="bg-blue-50 border border-blue-200 text-blue-700 p-4 rounded-xl mb-8 text-sm">
+          <div className="bg-blue-50 border border-blue-200 text-blue-700 p-4 rounded-xl mb-8 text-sm font-medium">
             {infoMessage}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
-          <div>
-            <Label className="text-gray-700 font-medium mb-2 block text-base">Nama Lengkap</Label>
+        <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8 mt-5">
+          <div className="flex flex-col gap-2">
+            <Label className="text-gray-700 font-bold text-base">Nama Panggilan Kamu *</Label>
             <Input
-              placeholder="Contoh: Budi Santos"
+              placeholder="Biar asik masukin nama panggilan aja (Cth: Budi)"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              className="h-12 sm:h-14 text-base rounded-xl"
+              className="h-14 border-2 border-orange-200 focus:border-orange-500 focus:ring-orange-500 rounded-xl bg-orange-50/30 text-base shadow-sm w-full placeholder:text-gray-400"
             />
           </div>
 
-          <div>
-            <Label className="text-gray-700 font-medium mb-2 block text-base">Nomor HP / WhatsApp</Label>
+          {/* WhatsApp Input */}
+          <div className="flex flex-col gap-2 mb-5">
+            <Label className="text-gray-700 font-bold text-base">Nomor WhatsApp (Opsional)</Label>
             <Input
               type="tel"
-              placeholder="0812xxxxxxx"
+              placeholder="Masukin WA biar dapat notif pas giliranmu dekat!"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              required
-              className="h-12 sm:h-14 text-base rounded-xl"
+              className="h-14 border-2 border-orange-200 focus:border-orange-500 focus:ring-orange-500 rounded-xl bg-orange-50/30 text-base shadow-sm w-full placeholder:text-gray-400"
             />
           </div>
 
-          {/* Ganti dropdown jadi text input biasa */}
-          <div>
-            <Label className="text-gray-700 font-medium mb-2 block text-base">
-              Model Rambut yang Diinginkan
-            </Label>
+          {/* Haircut Model */}
+          <div className="flex flex-col gap-2 mb-8">
+            <Label className="text-gray-700 font-bold text-base">Model Rambut (Opsional)</Label>
             <Input
-              placeholder="Contoh: Low Fade, Buzz Cut, Mullet, Burst Fade, dll"
+              type="text"
+              placeholder="Mau gaya apa nih? (Contoh: Mullet / Fade) Kosongin aja kalau bebas"
               value={haircutModel}
               onChange={(e) => setHaircutModel(e.target.value)}
-              required
-              className="h-12 sm:h-14 text-base rounded-xl"
+              className="h-14 border-2 border-orange-200 focus:border-orange-500 focus:ring-orange-500 rounded-xl bg-orange-50/30 text-base shadow-sm w-full placeholder:text-gray-400"
             />
-            <p className="text-xs text-gray-500 mt-1">
-              Ketik bebas model yang kamu mau, KHONG akan sesuaikan
-            </p>
           </div>
 
           {serviceType === 'Booking' && (
@@ -344,29 +350,30 @@ export default function JoinPage() {
             </div>
           )}
 
-          <div className="bg-gray-50 border border-gray-200 p-5 rounded-xl text-sm text-gray-600">
-            <p className="font-medium mb-2">Estimasi waktu tunggu saat ini sekitar 25 menit.</p>
-            <p>Anda akan menerima notifikasi WhatsApp saat giliran Anda mendekat.</p>
+          {/* Container Estimasi (Sekarang masuk ke dalam flex box) */}
+          <div className="bg-orange-50/50 border border-orange-200 p-5 rounded-xl text-sm text-gray-700 mt-6 mb-4">
+            <p className="font-bold mb-1 text-orange-800">Kira-kira nunggu 25 menitan nih ☕</p>
+            <p className="text-orange-700/80">Tenang aja, nanti dikabarin via WA kalau giliranmu udah dekat kok!</p>
           </div>
 
-          <div className="flex items-start gap-3">
+          <div className="flex items-start gap-3 mt-4">
             <Checkbox
               id="terms"
               checked={agreeTerms}
               onCheckedChange={(checked) => setAgreeTerms(!!checked)}
               className="mt-1 h-5 w-5 border-orange-500 data-[state=checked]:bg-orange-500 data-[state=checked]:border-orange-500"
             />
-            <Label htmlFor="terms" className="text-sm text-gray-600 leading-relaxed cursor-pointer">
-              Dengan bergabung, Anda menyetujui syarat & ketentuan kami. Kami akan mengirimkan notifikasi WhatsApp saat giliran Anda.
+            <Label htmlFor="terms" className="text-sm text-gray-600 leading-relaxed cursor-pointer font-medium">
+              Sip, aku setuju sama aturannya. Boleh kirim notif WA pas giliranku tiba! 🤙
             </Label>
           </div>
 
           <Button
-            type="submit"
-            className="w-full bg-orange-600 hover:bg-orange-700 text-white h-14 sm:h-16 text-lg sm:text-xl font-bold rounded-xl shadow-lg mt-6 sm:mt-10"
+            onClick={handleSubmit}
             disabled={loading || !agreeTerms}
+            className="w-full h-14 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white rounded-xl text-lg font-bold shadow-lg shadow-orange-500/25 transition-all active:scale-[0.98] mt-8"
           >
-            {loading ? 'Memproses...' : 'Masuk Antrian'}
+            {loading ? 'Daftarin kamu...' : 'Antri Sekarang'}
           </Button>
         </form>
       </div>
