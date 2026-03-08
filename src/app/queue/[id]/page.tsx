@@ -100,8 +100,8 @@ export default function QueueStatusPage() {
   const progress = Math.min(100, Math.max(0, 100 - (position * 5))) // contoh: posisi 1 = 95%, posisi 5 = 75%
 
   return (
-    <div className="min-h-screen bg-white overflow-x-hidden">
-      <div className="max-w-md mx-auto w-full px-5 py-10">
+    <div className="h-screen bg-white overflow-hidden flex flex-col">
+      <div className="flex-1 overflow-y-auto px-5 py-10 max-w-md mx-auto w-full">
         {/* Header */}
         <h1 className="text-2xl font-bold text-gray-800 mb-2 text-center">Status Antrian</h1>
         <div className="flex justify-center mb-8">
