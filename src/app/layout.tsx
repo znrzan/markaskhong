@@ -6,8 +6,8 @@ import BottomNav from '@/components/BottomNav'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Barber Queue - Gaya Pria Sejati',
-  description: 'Antrian cukur tanpa nunggu lama di Surabaya',
+  title: 'MarkasKhong',
+  description: 'MarkasKhong',
 }
 
 export default function RootLayout({
