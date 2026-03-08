@@ -139,7 +139,7 @@ export default function QueueStatusPage() {
   // Jika karena suatu alasan findIndex -1, fallback ke position asli
   const displayPosition = currentPosition > 0 ? currentPosition : queueData.position
 
-  const estimated = displayPosition * 30 // rata-rata 30 menit per orang
+  const estimated = (displayPosition - 1) * 30 // rata-rata 30 menit per orang yg ngantri di depannya
 
   const progress = Math.min(100, 100 - ((displayPosition - 1) * 10)) // contoh
 
@@ -182,7 +182,7 @@ export default function QueueStatusPage() {
           <div className="flex items-center justify-center gap-3 mb-3">
             <Clock size={32} className="text-orange-600" />
             <p className="text-2xl font-extrabold text-orange-600 tracking-tight">
-              Kira-kira {isBooking ? 'Sesuai Sesi' : `${estimated} menit`} lagi
+              {isBooking ? 'Sesuai Sesi' : (displayPosition === 1 ? 'Giliranmu sebentar lagi!' : `Kira-kira ${estimated} menit lagi`)}
             </p>
           </div>
           <p className="text-gray-600 font-medium">Santai, bentar lagi giliranmu dicukur kok ☕</p>

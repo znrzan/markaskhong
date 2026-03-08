@@ -52,7 +52,7 @@ export default function FullAntreanPage() {
     // Find customer data to send WA
     const customer = queues.find(q => q.id === id)
     if (customer && customer.phone && customer.phone !== '-') {
-      const waMessage = `Bro/Sist ${customer.customer_name}, giliranmu cukur sekarang nih! ✂️🔥\n\nYuk, langsung stand-by di kursi Barbershop Markas Khong ya. Ditungguin nih sama Barber-nya!`;
+      const waMessage = `Hai ${customer.customer_name}, giliranmu cukur sekarang nih!\n\nYuk, langsung stand-by di kursi Barbershop Markas Khong ya. Ditungguin nih sama Barber-nya!`;
       fetch('/api/whatsapp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
