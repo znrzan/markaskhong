@@ -5,47 +5,60 @@ import { useParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
-import { AlertCircle, Clock, MapPin } from 'lucide-react'
+import { AlertCircle, Clock, MapPin, CheckCircle2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 export default function QueueStatusPage() {
   const { id } = useParams()
   const router = useRouter()
   const [queueData, setQueueData] = useState<any>(null)
+  const [allQueues, setAllQueues] = useState<any[]>([]) // untuk hitung posisi real
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!id) return
 
-    async function fetchQueue() {
+    async function fetchData() {
       setLoading(true)
-      const { data, error } = await supabase
+
+      // Fetch data antrian user ini
+      const { data: userQueue, error: userError } = await supabase
         .from('queues')
         .select('*, services(name, is_trending)')
         .eq('id', id)
         .single()
 
-      if (error) {
-        setError('Gagal memuat status antrian')
-        console.error(error)
-      } else {
-        setQueueData(data)
+      if (userError) {
+        setError('Antrian tidak ditemukan')
+        setLoading(false)
+        return
       }
+
+      setQueueData(userQueue)
+
+      // Fetch semua antrian aktif hari ini untuk hitung posisi real
+      const today = new Date().toISOString().split('T')[0]
+      const { data: allActive } = await supabase
+        .from('queues')
+        .select('id, position, status')
+        .gte('created_at', today)
+        .neq('status', 'done') // hanya yang belum selesai
+        .order('position', { ascending: true })
+
+      setAllQueues(allActive || [])
+
       setLoading(false)
     }
 
-    fetchQueue()
+    fetchData()
 
-    // Realtime subscription
+    // Realtime: update kalau ada perubahan di queues
     const channel = supabase
-      .channel('queues-changes')
-      .on('postgres_changes', 
-        { event: 'UPDATE', schema: 'public', table: 'queues', filter: `id=eq.${id}` },
-        (payload) => {
-          setQueueData(payload.new)
-        }
-      )
+      .channel('queue-status')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'queues' }, () => {
+        fetchData() // refresh semua data
+      })
       .subscribe()
 
     return () => {
@@ -54,49 +67,62 @@ export default function QueueStatusPage() {
   }, [id])
 
   const handleCancel = async () => {
-    if (!confirm('Yakin ingin membatalkan antrian?')) return
+    if (!confirm('Yakin batalkan antrian?')) return
 
-    setLoading(true)
-    const { error } = await supabase
+    await supabase
       .from('queues')
       .update({ status: 'cancelled' })
       .eq('id', id)
 
-    if (error) {
-      setError('Gagal membatalkan antrian')
-    } else {
-      router.push('/')
-    }
-    setLoading(false)
+    router.push('/')
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <p className="text-gray-500">Memuat status antrian...</p>
-      </div>
-    )
+    return <div className="min-h-screen flex items-center justify-center text-gray-500">Memuat...</div>
   }
 
   if (error || !queueData) {
     return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6">
+      <div className="min-h-screen flex flex-col items-center justify-center p-6">
         <AlertCircle size={64} className="text-red-500 mb-4" />
-        <h1 className="text-2xl font-bold text-gray-800 mb-2">Oops!</h1>
+        <h1 className="text-2xl font-bold mb-2">Oops!</h1>
         <p className="text-gray-600 text-center">{error || 'Antrian tidak ditemukan'}</p>
-        <Button onClick={() => router.push('/')} className="mt-6 bg-orange-600 hover:bg-orange-700">
+        <Button onClick={() => router.push('/')} className="mt-6 bg-orange-600">
+          Kembali
+        </Button>
+      </div>
+    )
+  }
+
+  // Kondisi utama: kalau sudah selesai, tampilkan pesan terima kasih
+  if (queueData.status === 'done') {
+    return (
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6 overflow-x-hidden">
+        <CheckCircle2 size={80} className="text-green-500 mb-6" />
+        <h1 className="text-3xl sm:text-4xl font-bold text-green-600 mb-4 text-center">
+          Terima Kasih!
+        </h1>
+        <p className="text-lg text-gray-700 text-center mb-8 max-w-md">
+          Sudah selesai cukur rambut hari ini. Semoga puas dengan hasilnya! 😊
+        </p>
+        <p className="text-gray-500 text-center mb-10">
+          Sampai jumpa lagi di lain waktu.
+        </p>
+
+        <Button onClick={() => router.push('/')} className="bg-orange-600 hover:bg-orange-700">
           Kembali ke Beranda
         </Button>
       </div>
     )
   }
 
-  const { position, estimated_wait, customer_name, services } = queueData
-  const serviceName = services?.name || 'Tidak dipilih'
-  const isTrending = services?.is_trending || false
+  // Kalau belum selesai, tampilkan status normal
+  // Hitung posisi real dari semua antrian aktif
+  const activeQueues = allQueues.filter(q => q.status !== 'done')
+  const currentPosition = activeQueues.findIndex(q => q.id === id) + 1
+  const estimated = currentPosition * 30 // rata-rata 30 menit per orang
 
-  // Progress contoh (sesuaikan sesuai logika kamu)
-  const progress = Math.min(100, Math.max(0, 100 - (position * 5)))
+  const progress = Math.min(100, 100 - ((currentPosition - 1) * 10)) // contoh
 
   return (
     <div className="min-h-screen bg-white flex flex-col overflow-x-hidden">
@@ -105,17 +131,17 @@ export default function QueueStatusPage() {
 
         <div className="flex justify-center mb-8">
           <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-300 px-4 py-1 text-lg">
-            {isTrending ? 'TRENDI!' : 'Sedang Menunggu'}
+            Sedang Menunggu
           </Badge>
         </div>
 
         <div className="text-center mb-10">
           <p className="text-lg text-gray-600 mb-1">NOMOR ANTRIAN ANDA</p>
           <h2 className="text-6xl sm:text-7xl font-extrabold text-orange-600">
-            ke-{position}
+            ke-{currentPosition}
           </h2>
           <p className="text-sm text-gray-500 mt-2">
-            Nama: {customer_name}
+            Nama: {queueData.customer_name}
           </p>
         </div>
 
@@ -123,7 +149,7 @@ export default function QueueStatusPage() {
           <div className="flex items-center justify-center gap-3 mb-4">
             <Clock size={32} className="text-orange-600" />
             <p className="text-2xl font-bold text-orange-600">
-              Estimasi {estimated_wait} menit
+              Estimasi {estimated} menit
             </p>
           </div>
           <p className="text-gray-700">Menunggu Giliran Anda</p>
@@ -131,12 +157,14 @@ export default function QueueStatusPage() {
 
         <div className="mb-10">
           <p className="text-gray-600 mb-2 text-center">
-            Sisa {position - 1} orang lagi sebelum Anda
+            Sisa {currentPosition - 1} orang lagi sebelum Anda
           </p>
-          <Progress 
-            value={progress} 
-            className="h-4 bg-gray-200 rounded-full overflow-hidden [&>div]:bg-gradient-to-r [&>div]:from-orange-400 [&>div]:to-yellow-400"
-          />
+          <div className="h-4 bg-gray-200 rounded-full overflow-hidden">
+            <Progress 
+              value={progress} 
+              className="h-4 bg-gradient-to-r from-orange-400 to-yellow-400"
+            />
+          </div>
           <p className="text-sm text-gray-500 text-center mt-2">
             {progress}% menuju giliran • Update otomatis
           </p>
