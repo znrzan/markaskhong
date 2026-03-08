@@ -1,4 +1,4 @@
-import { QRCodeSVG } from 'qrcode.react' // pastikan pakai QRCodeSVG kalau error default
+import { QRCodeSVG } from 'qrcode.react'
 
 export default function Home() {
   const joinUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/join`
