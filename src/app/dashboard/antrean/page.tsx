@@ -129,6 +129,7 @@ export default function FullAntreanPage() {
               const isServing = q.status === 'serving'
               const isWaiting = q.status === 'waiting' || q.status === 'booked'
               const isDone = q.status === 'done'
+              const isCancelled = q.status === 'cancelled'
 
               // Formatted digit (e.g., #05)
               const formattedPos = q.position.toString().padStart(2, '0')
@@ -142,7 +143,8 @@ export default function FullAntreanPage() {
                     "rounded-[20px] bg-white border-2 p-4 transition-all hover:shadow-md",
                     isServing ? "border-orange-500 shadow-sm" :
                       isWaiting ? "border-gray-100 shadow-sm" :
-                        "border-gray-100 opacity-80"
+                        isCancelled ? "border-red-100 bg-red-50/30 opacity-70" :
+                          "border-gray-100 opacity-80"
                   )}
                 >
                   <div className="flex justify-between items-start mb-4 gap-3">
@@ -151,14 +153,16 @@ export default function FullAntreanPage() {
                         "text-3xl sm:text-4xl font-black tracking-tight shrink-0",
                         isServing ? "text-orange-500" :
                           isWaiting ? "text-orange-300" :
-                            "text-gray-300"
+                            isCancelled ? "text-red-300 line-through" :
+                              "text-gray-300"
                       )}>
                         #{formattedPos}
                       </h3>
                       <div className="min-w-0 flex-1">
                         <h4 className={cn(
                           "font-extrabold text-[15px] sm:text-[17px] leading-tight mb-1 truncate block",
-                          isDone ? "text-gray-500" : "text-gray-900"
+                          (isDone || isCancelled) ? "text-gray-500" : "text-gray-900",
+                          isCancelled && "line-through text-red-400"
                         )}>
                           {q.customer_name}
                         </h4>
@@ -179,42 +183,42 @@ export default function FullAntreanPage() {
                       "text-[8px] sm:text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full shrink-0",
                       isServing ? "bg-orange-500 hover:bg-orange-600 text-white" :
                         isWaiting ? "bg-yellow-400 hover:bg-yellow-500 text-yellow-900" :
-                          "bg-[#68D391] hover:bg-[#68D391] text-white"
+                          isCancelled ? "bg-red-100 hover:bg-red-200 text-red-600 border border-red-200" :
+                            "bg-[#68D391] hover:bg-[#68D391] text-white"
                     )}>
-                      {isServing ? 'Lagi Dicukur' : isWaiting ? 'Lagi Nunggu' : 'Beres'}
+                      {isServing ? 'Lagi Dicukur' : isWaiting ? 'Lagi Nunggu' : isCancelled ? 'Dibatalkan' : 'Beres'}
                     </Badge>
                   </div>
 
                   {/* Actions Area */}
-                  <div className="flex gap-3">
-                    {/* "Panggilan" Button */}
-                    <button
-                      onClick={() => !isDone && handlePanggil(q.id)}
-                      disabled={isDone || isServing}
-                      className={cn(
-                        "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold text-sm transition-all",
-                        isDone ? "bg-gray-200 text-gray-400 cursor-not-allowed" :
-                          isServing ? "bg-orange-500 text-white" :
-                            "bg-[#F46B23] hover:bg-orange-600 text-white shadow-sm"
+                  {!isCancelled && (
+                    <div className="flex gap-3">
+                      {/* "Panggilan" Button (Tampil saat belum dipanggil) */}
+                      {(!isServing && !isDone) && (
+                        <button
+                          onClick={() => handlePanggil(q.id)}
+                          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold text-sm transition-all bg-[#F46B23] hover:bg-orange-600 text-white shadow-sm"
+                        >
+                          <Volume2 size={16} /> Panggil
+                        </button>
                       )}
-                    >
-                      <Volume2 size={16} /> Panggil
-                    </button>
 
-                    {/* "Selesai" Button */}
-                    <button
-                      onClick={() => !isDone && handleSelesai(q.id)}
-                      disabled={isDone}
-                      className={cn(
-                        "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold text-sm transition-all",
-                        isDone ? "bg-gray-200 text-gray-400 cursor-not-allowed" :
-                          isServing ? "bg-yellow-400 hover:bg-yellow-500 text-yellow-900 shadow-sm" :
-                            "bg-yellow-400 hover:bg-yellow-500 text-yellow-900 shadow-sm"
+                      {/* "Selesai" Button (Tampil saat sedang dicukur, atau saat sudah beres bentuk disabled) */}
+                      {(isServing || isDone) && (
+                        <button
+                          onClick={() => !isDone && handleSelesai(q.id)}
+                          disabled={isDone}
+                          className={cn(
+                            "w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold text-sm transition-all",
+                            isDone ? "bg-gray-200 text-gray-400 cursor-not-allowed" :
+                              "bg-yellow-400 hover:bg-yellow-500 text-yellow-900 shadow-sm"
+                          )}
+                        >
+                          <CheckCircle2 size={16} /> Selesai
+                        </button>
                       )}
-                    >
-                      <CheckCircle2 size={16} /> Selesai
-                    </button>
-                  </div>
+                    </div>
+                  )}
                 </div>
               )
             })}
